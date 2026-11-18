@@ -1,4 +1,5 @@
-"""M1-M4 (P3): Logistic Regression, Gaussian NB, distance-weighted KNN, Random Forest.
+"""M1-M6: Logistic Regression, Gaussian NB, distance-weighted KNN, Random Forest,
+HistGradientBoosting, MLP. (M1-M4 run on P3's laptop, M5-M6 on P2's, M7 is train_rank.py.)
 
 Same protocol as train_rank.py (M7) so the rows in results/model_results.csv are comparable:
 - ref_uncertain points are excluded (LOCKED policy)
@@ -7,6 +8,7 @@ Same protocol as train_rank.py (M7) so the rows in results/model_results.csv are
 - evaluation ALWAYS uses all candidates; scores are normalised per point with mode="prob"
 
 Usage:  python src/train_models.py --models M1,M2,M3,M4
+        python src/train_models.py --models M5,M6
 """
 import os
 import sys
@@ -26,7 +28,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier
+from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -104,6 +107,17 @@ def build(mid, a):
         return (make_pipeline(imp, RandomForestClassifier(n_estimators=cfg["n_estimators"],
                 min_samples_leaf=cfg["min_samples_leaf"], max_samples=cfg["max_samples"], n_jobs=-1,
                 random_state=SEED)), "Ensemble (Random Forest, bagging)", cfg)
+    if mid == "M5":
+        cfg = dict(max_iter=300, learning_rate=0.1, max_leaf_nodes=31, neg_per_point=4)
+        return (make_pipeline(imp, HistGradientBoostingClassifier(max_iter=cfg["max_iter"],
+                learning_rate=cfg["learning_rate"], max_leaf_nodes=cfg["max_leaf_nodes"],
+                random_state=SEED)), "Boosting (HistGradientBoosting)", cfg)
+    if mid == "M6":
+        cfg = dict(hidden_layer_sizes=[64, 32], early_stopping=True, validation_fraction=0.1,
+                   n_iter_no_change=10, max_iter=200, scaler="StandardScaler", neg_per_point=4)
+        return (make_pipeline(imp, StandardScaler(), MLPClassifier(hidden_layer_sizes=(64, 32),
+                early_stopping=True, validation_fraction=0.1, n_iter_no_change=10, max_iter=200,
+                random_state=SEED)), "Neural network (MLP 64-32)", cfg)
     raise ValueError(mid)
 
 
@@ -140,6 +154,19 @@ def run(mid, train, train_fit, st, a):
     t0 = time.time()
     model.fit(X(tr), tr["label"].values)
     train_time = time.time() - t0
+
+    if mid == "M6":
+        # real training history of the MLP (only models with epoch-wise histories get a curve)
+        mlp = model[-1]
+        fig, ax = plt.subplots(figsize=(6, 4))
+        ax.plot(mlp.loss_curve_, label="training loss")
+        ax.set_xlabel("epoch"); ax.set_ylabel("log loss"); ax.grid(alpha=.3)
+        ax2 = ax.twinx()
+        ax2.plot(mlp.validation_scores_, color="tab:orange", label="validation accuracy (held-out 10% of rows)")
+        ax2.set_ylabel("validation accuracy")
+        fig.legend(loc="center right"); plt.title("M6 MLP: training history"); fig.tight_layout()
+        fig.savefig(P("figures", "M6_loss_curve.png"), dpi=150); plt.close(fig)
+
     t0 = time.time()
     raw = scores(model, st)
     infer_ms = 1000 * (time.time() - t0) / st.groupby(["trip_id", "point_idx"]).ngroups
