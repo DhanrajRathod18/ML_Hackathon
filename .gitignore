@@ -4,3 +4,7 @@ __pycache__/
 .ipynb_checkpoints/
 logs/*.log
 .env
+
+models/M4.joblib
+shim/
+results/preds_student_test_M[1-4].parquet
