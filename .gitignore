@@ -8,3 +8,6 @@ logs/*.log
 models/M4.joblib
 shim/
 results/preds_student_test_M[1-4].parquet
+
+results/optuna_journal.log*
+results/preds_student_test_M7_tuned.parquet
