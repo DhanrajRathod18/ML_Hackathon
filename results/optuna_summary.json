@@ -1,0 +1,23 @@
+{
+  "study": "m7_lambdarank_tpe",
+  "sampler": "TPE (seed 42, 10 startup trials)",
+  "pruner": "Median (10 startup, warmup 1 fold)",
+  "objective": "mean Top-1, 5-fold GroupKFold by trip_id, 80 train trips",
+  "n_trials_total": 25,
+  "n_complete": 20,
+  "n_pruned": 5,
+  "search_time_s": 2384.6,
+  "baseline_cv_top1": 0.8997417026012229,
+  "best_trial": 13,
+  "best_cv_top1": 0.9011046722612622,
+  "best_params": {
+    "n_estimators": 450,
+    "learning_rate": 0.0336192213583546,
+    "num_leaves": 20,
+    "min_child_samples": 61,
+    "subsample": 0.7685838469303554,
+    "colsample_bytree": 0.8359548354641536,
+    "reg_lambda": 0.006264674334925785
+  },
+  "final_refit_time_s": 25.1
+}
