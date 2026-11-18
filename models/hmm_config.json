@@ -1,0 +1,13 @@
+{
+  "deploy": "learned",
+  "classic": {
+    "alpha": 2.0,
+    "beta": 30.0,
+    "floor": -15.0
+  },
+  "learned": {
+    "alpha": 1.0
+  },
+  "selected_on": "train out-of-fold Top-1",
+  "student_test_best": "HMM learned transitions (N6)"
+}

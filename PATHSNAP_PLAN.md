@@ -231,7 +231,19 @@ report. Disclose AI use. Before the viva, each person explains their part to the
   and evaluate on `~ref_uncertain` rows, so that results/model_results.csv is comparable. Classifiers: mode="prob"; rankers: mode="softmax".
 - [ ] model_results.csv + comparison plots pushed by 12:30
 - [ ] Optuna 50 trials, tuned vs untuned
-- [ ] HMM classic + learned (N6); classifier vs HMM table
+- [x] HMM classic + learned (N6) (P1). Run order: `python src/score_candidates.py` (out-of-fold M7 scores, ~2 min) → `python src/run_hmm.py` (~4 min).
+      Tuned ONLY on train OOF scores; student_test used once. Results (Top-1 / continuity, clean points):
+      | variant | train OOF | student_test |
+      | classifier-only M7 | 0.9007 / 0.9616 | 0.9047 / 0.9555 |
+      | HMM classic (best α=2, β=30, floor=−15, 18-point grid) | 0.8991 / 0.9785 | 0.9175 / 0.9776 |
+      | **HMM learned transitions (α=1), DEPLOYED** | **0.9186 / 0.9874** | **0.9186 / 0.9854** |
+      The classic HMM never beat classifier-only on train Top-1 (it only raised continuity), while the learned transition did on both partitions. This is the key N6 evidence.
+      Learned LR coefficients (results/hmm_learned_transition_coef.csv): same_arc +2.05, connected +1.30, turn_angle −2.10, abs_diff −1.24, uturn −0.83.
+      Error types (% of clean student_test points; direction / junction / other road): classifier 4.53/1.78/3.22 → learned HMM 3.93/1.52/2.69.
+      Remaining direction errors: 590 of 752 are in trip 00000077 (runs up to 192 points, slow). On those points, even when moving > 4 m/s, GPS heading
+      agrees with the reference direction only 45.6% (vs 88.3% on that trip's correct points), so the GPS is genuinely ambiguous there. Report this as a limitation; do NOT tune on it.
+- [x] src/pipeline.py: `Predictor().predict_trip(trip_dir)` (no route read) + `score_trip(trip_dir, pred_arcs)` (server-side, DP labels).
+      Tested on student_test 00000040: 2995 points in 1.6 s, top1 0.964, continuity 0.996. **P4: the API calls exactly these two.**
 - [ ] Gap bridging + route metric (N7)   - [ ] Error taxonomy (N8)
 - [ ] API with real pipeline, all 10 student_test trips OK
 - [ ] README   - [ ] Report PDF   - [ ] Final rehearsal

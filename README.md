@@ -23,6 +23,14 @@ This creates `data/processed/{train,student_test}_cands.parquet` (one row per GP
 - Top-1 accuracy = per `(trip_id, point_idx)`, argmax score among candidates == `label_arc`.
 - CV: `GroupKFold(5)` with `groups=trip_id`. Student-test is for model comparison only. Seed 42.
 
+## Reproduce the results (in this order)
+```bash
+python src/build_dataset.py      # candidate tables (~30 s)
+python src/train_rank.py         # M7 LambdaRank: CV + student-test, appends results/model_results.csv (~2 min)
+python src/score_candidates.py   # out-of-fold M7 scores for HMM tuning (~2 min)
+python src/run_hmm.py            # HMM classic vs learned transitions, writes models/hmm_config.json (~4 min)
+```
+
 ## Pipeline modules (`src/`)
 | File | Purpose |
 |---|---|
@@ -32,3 +40,9 @@ This creates `data/processed/{train,student_test}_cands.parquet` (one row per GP
 | `candidates.py` | KD-tree candidate arcs within 50 m |
 | `features.py` | 24 distance / direction / context features |
 | `build_dataset.py` | runs everything in parallel, writes parquet + summary |
+| `metrics.py` | shared metrics: every model is scored with these |
+| `train_rank.py` | M7 LightGBM LambdaRank |
+| `score_candidates.py` | out-of-fold scores for leakage-free HMM tuning |
+| `hmm.py` | lattice, network distances (bounded Dijkstra), classic + learned transitions, Viterbi |
+| `run_hmm.py` | HMM tuning + classifier-vs-HMM comparison |
+| `pipeline.py` | `Predictor.predict_trip` (inference, no route) + `score_trip` (server-side scoring) |

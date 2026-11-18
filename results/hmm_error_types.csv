@@ -1,0 +1,4 @@
+variant,direction,junction,other
+pred_classifier,4.53,1.78,3.22
+pred_hmm_classic,4.8,1.81,1.64
+pred_hmm_learned,3.93,1.52,2.69
