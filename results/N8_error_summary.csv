@@ -1,0 +1,5 @@
+error_category,count,percentage_of_errors
+wrong_direction,867,47.56
+other_ambiguous,473,25.95
+junction,391,21.45
+parallel_road,92,5.05

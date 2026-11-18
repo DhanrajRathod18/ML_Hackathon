@@ -1,0 +1,10 @@
+metric,value
+total_nodes,88809.0
+original_arc_records,165790.0
+unique_directed_edges,165498.0
+isolated_nodes,0.0
+weakly_connected_components,175.0
+largest_component_nodes,86854.0
+largest_component_percentage,97.8
+smallest_component_nodes,2.0
+components_below_10_nodes,103.0
