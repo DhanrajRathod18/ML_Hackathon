@@ -229,8 +229,12 @@ report. Disclose AI use. Before the viva, each person explains their part to the
       → the HMM target is the direction errors (a wrong-direction arc doesn't connect to its neighbours).
 - **ALL models MUST use `src/metrics.py`** (normalize_per_point → evaluate → predicted_sequence → continuity → append_result)
   and evaluate on `~ref_uncertain` rows, so that results/model_results.csv is comparable. Classifiers: mode="prob"; rankers: mode="softmax".
-- [ ] model_results.csv + comparison plots pushed by 12:30
-- [ ] Optuna 50 trials, tuned vs untuned
+- [x] All 7 models in results/model_results.csv + comparison plots (P2/P3). Student-test Top-1: M7 0.9047, M5 0.9022, M6 0.8926,
+      M4 0.8919, M1 0.8713, M2 0.8619, M3 0.8483. M7 is best on both CV and student-test, so it's the final model.
+- [x] Optuna on M7 (P3, `src/tune.py`, results/optuna_summary.json): TPE seed 42, 25 trials (20 complete, 5 pruned), objective = mean
+      5-fold GroupKFold Top-1 on the 80 train trips, 39.7 min. Best trial 13: CV Top-1 0.9011 vs untuned 0.8997 (+0.0014, far below the
+      fold s.d. 0.0275); student-test 0.9046 vs 0.9047. → **The deployed model stays untuned M7** (gain not meaningful; the HMM is built on it).
+      Best params favour smaller trees (num_leaves 20 vs 63), which is consistent with the train-vs-CV gap (in-sample Top-1 0.975 vs CV 0.900).
 - [x] HMM classic + learned (N6) (P1). Run order: `python src/score_candidates.py` (out-of-fold M7 scores, ~2 min) → `python src/run_hmm.py` (~4 min).
       Tuned ONLY on train OOF scores; student_test used once. Results (Top-1 / continuity, clean points):
       | variant | train OOF | student_test |
@@ -244,9 +248,12 @@ report. Disclose AI use. Before the viva, each person explains their part to the
       agrees with the reference direction only 45.6% (vs 88.3% on that trip's correct points), so the GPS is genuinely ambiguous there. Report this as a limitation; do NOT tune on it.
 - [x] src/pipeline.py: `Predictor().predict_trip(trip_dir)` (no route read) + `score_trip(trip_dir, pred_arcs)` (server-side, DP labels).
       Tested on student_test 00000040: 2995 points in 1.6 s, top1 0.964, continuity 0.996. **P4: the API calls exactly these two.**
-- [ ] Gap bridging + route metric (N7)   - [ ] Error taxonomy (N8)
-- [ ] API with real pipeline, all 10 student_test trips OK
-- [ ] README   - [ ] Report PDF   - [ ] Final rehearsal
+- [x] Gap bridging + route metric (N7, P4; repeated-arc loop bug fixed 15:45)   - [x] Error taxonomy + Folium maps (N8, P2)
+- [x] API with the real pipeline: all 10 student_test trips OK through /trips + /predict (tested 15:32, re-tested after the bridge fix)
+- [x] README incl. two-laptop deployment (P4)
+- [ ] notebooks/01_eda.ipynb is EMPTY (0 bytes) on GitHub (P2 must re-save + push)
+- [ ] Two-laptop rehearsal + screenshots (UI, Laptop-1 cmd log)   - [ ] Code freeze → evaluator crash-only check
+- [ ] Report PDF (AI-use disclosure included)   - [ ] Viva run-through
 
 ## 8. Decisions log
 - 10:50 plan v2: 12:30 training deadline, 7 models split across 3 laptops, novelties N1–N8 assigned.
