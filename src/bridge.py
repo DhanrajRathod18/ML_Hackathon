@@ -136,6 +136,9 @@ def bridge_route(pred_arcs: Sequence[int] | np.ndarray, arcs: Any, nodes: Any) -
     path_cache: dict[tuple[int, int], list[int] | None] = {}
 
     for previous_id, next_id in zip(predicted, predicted[1:]):
+        # Consecutive GPS points on the same arc are one traversal, not a loop back to its start.
+        if previous_id == next_id:
+            continue
         previous_end = int(arc_values[previous_id, 1])
         next_start = int(arc_values[next_id, 0])
 

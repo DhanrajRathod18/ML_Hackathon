@@ -252,7 +252,7 @@ def metric_value(payload: dict[str, Any], key: str) -> float | None:
         return None
     if not math.isfinite(value) or value < 0.0:
         return None
-    if key in ("top1", "continuity") and value > 1.0:
+    if key in ("top1", "top1_all", "continuity") and value > 1.0:
         return None
     return value
 
@@ -380,23 +380,33 @@ if payload is None:
     st.info("Configure the backend, select a trip, and select **Predict**.")
 else:
     top1 = metric_value(payload, "top1")
+    top1_all = metric_value(payload, "top1_all")
     continuity = metric_value(payload, "continuity")
     latency = metric_value(payload, "latency_ms")
     n_points_display = observation_count(payload)
 
-    metric_columns = st.columns(4)
+    metric_columns = st.columns(5)
     metric_columns[0].metric(
-        "Top-1 Accuracy",
-        "Unavailable" if top1 is None else f"{top1:.2%}",
+        "Top-1 Accuracy (all points)",
+        "Unavailable" if top1_all is None else f"{top1_all:.2%}",
     )
     metric_columns[1].metric(
-        "Route Continuity",
+        "Top-1 Accuracy (reference-covered points)",
+        "Unavailable" if top1 is None else f"{top1:.2%}",
+    )
+    metric_columns[2].metric(
+        "Route Continuity (after gap bridging)",
         "Unavailable" if continuity is None else f"{continuity:.2%}",
     )
-    metric_columns[2].metric("GPS Observations", n_points_display)
-    metric_columns[3].metric(
+    metric_columns[3].metric("GPS Observations", n_points_display)
+    metric_columns[4].metric(
         "Inference Latency",
         "Unavailable" if latency is None else f"{latency:.1f} ms",
+    )
+    st.caption(
+        "Accuracy is computed by the API server against its internal reference route. "
+        "'Reference-covered points' excludes GPS points lying more than 50 m from every arc "
+        "of the reference route (the reference does not cover them); 'all points' counts every observation."
     )
 
     gps_coordinates = valid_gps_points(payload.get("gps_points"))
