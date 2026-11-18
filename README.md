@@ -29,6 +29,7 @@ python src/build_dataset.py      # candidate tables (~30 s)
 python src/train_rank.py         # M7 LambdaRank: CV + student-test, appends results/model_results.csv (~2 min)
 python src/score_candidates.py   # out-of-fold M7 scores for HMM tuning (~2 min)
 python src/run_hmm.py            # HMM classic vs learned transitions, writes models/hmm_config.json (~4 min)
+python src/make_maps.py          # Folium maps: GPS + road network + reference + predicted route, legend + layer control
 ```
 
 ## Pipeline modules (`src/`)
@@ -45,6 +46,7 @@ python src/run_hmm.py            # HMM classic vs learned transitions, writes mo
 | `score_candidates.py` | out-of-fold scores for leakage-free HMM tuning |
 | `hmm.py` | lattice, network distances (bounded Dijkstra), classic + learned transitions, Viterbi |
 | `run_hmm.py` | HMM tuning + classifier-vs-HMM comparison |
+| `make_maps.py` | report maps (`maps/route_*.html`, `maps/eda_*.html`); evaluator data refused |
 | `pipeline.py` | `Predictor.predict_trip` (inference, no route) + `score_trip` (server-side scoring) |
 
 ## Run the evaluator service on two laptops
