@@ -95,6 +95,29 @@ def test_repeated_arcs_are_preserved_in_order():
     assert recall == pytest.approx(2.0 / 3.0)
 
 
+@pytest.mark.parametrize(
+    ("predicted", "expected"),
+    [
+        ([10, 10, 10], [10]),
+        ([10, 10, 15], [10, 15]),
+        ([10, 15, 10], [10, 15, 14, 10]),
+    ],
+)
+def test_consecutive_duplicate_predictions_collapse_without_losing_revisits(
+    predicted, expected
+):
+    nodes = np.array([[77.0, 12.0], [77.1, 12.0], [77.2, 12.0]])
+    arcs = np.zeros((16, 2), dtype=int)
+    arcs[10] = [0, 1]
+    arcs[14] = [2, 0]
+    arcs[15] = [1, 2]
+
+    route = bridge_route(predicted, arcs, nodes)
+
+    assert route == expected
+    assert_directionally_connected(arcs, route)
+
+
 def test_valid_connecting_path_preserves_repeated_original_arc_id():
     nodes = np.array([[77.0, 12.0], [77.1, 12.0], [77.2, 12.0]])
     arcs = np.array([[0, 1], [1, 2], [2, 0]])
