@@ -48,6 +48,9 @@ python src/train_rank.py         # M7 LambdaRank: CV + student-test, appends res
 python src/score_candidates.py   # out-of-fold M7 scores for HMM tuning (~2 min)
 python src/run_hmm.py            # HMM classic vs learned transitions, writes models/hmm_config.json (~4 min)
 python src/make_maps.py          # Folium maps: GPS + road network + reference + predicted route, legend + layer control
+python src/eda.py                # EDA tables (results/eda_*.csv, eda_summary.json) + figures/eda_*.png (~30 s)
+python src/m7_confusion.py       # figures/M7_confusion.png
+python report/build_report.py    # report skeleton: all tables + figures filled from results/, text boxes for the team
 ```
 
 ## Model comparison and M7 tuning
@@ -100,6 +103,8 @@ fresh checkout without it cannot resume the P3 journal.
 | `hmm.py` | lattice, network distances (bounded Dijkstra), classic + learned transitions, Viterbi |
 | `run_hmm.py` | HMM tuning + classifier-vs-HMM comparison |
 | `make_maps.py` | report maps (`maps/route_*.html`, `maps/eda_*.html`); evaluator data refused |
+| `eda.py` | reproducible EDA: inventory, data quality, network connectivity, route checks, heading-vs-speed |
+| `m7_confusion.py` | M7 confusion matrix (same convention as M1–M6) |
 | `pipeline.py` | `Predictor.predict_trip` (inference, no route) + `score_trip` (server-side scoring) |
 
 ## Run the evaluator service on two laptops
