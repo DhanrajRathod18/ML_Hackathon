@@ -222,7 +222,13 @@ report. Disclose AI use. Before the viva, each person explains their part to the
 - [ ] make_fake + train_models harness tested on fake data (P3)
 - [ ] EDA notebook + 2 Folium maps (P2)
 - [ ] API + UI dummy, 2-laptop call works (P4)
-- [ ] M1–M4 real (P3)   - [ ] M5–M6 real (P2)   - [ ] M7 LambdaRank real (P1)
+- [ ] M1–M4 real (P3)   - [ ] M5–M6 real (P2)
+- [x] M7 LambdaRank (P1, `python src/train_rank.py`, ~2 min): CV Top-1 0.8997±0.0275, CV macro-F1 0.9440±0.0154;
+      student_test Top-1 0.9047, macro-F1 0.9464, logloss 0.0493, continuity 0.9555, 0.03 ms/pt.
+      M7 student_test errors: wrong direction (twin) 4.53% of points, adjacent/junction 1.78%, other road 3.22%; 28.7% of errors at < 3 m/s.
+      → the HMM target is the direction errors (a wrong-direction arc doesn't connect to its neighbours).
+- **ALL models MUST use `src/metrics.py`** (normalize_per_point → evaluate → predicted_sequence → continuity → append_result)
+  and evaluate on `~ref_uncertain` rows, so that results/model_results.csv is comparable. Classifiers: mode="prob"; rankers: mode="softmax".
 - [ ] model_results.csv + comparison plots pushed by 12:30
 - [ ] Optuna 50 trials, tuned vs untuned
 - [ ] HMM classic + learned (N6); classifier vs HMM table
