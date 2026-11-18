@@ -7,6 +7,24 @@ Full design, measured data facts and team plan: [PATHSNAP_PLAN.md](PATHSNAP_PLAN
 ```bash
 pip install -r requirements.txt
 ```
+
+### P3 Windows Parquet compatibility
+
+On the P3 laptop, Windows policy blocks `pyarrow` and `fastparquet`. P3 uses a
+local compatibility shim at `shim/sitecustomize.py`; it is **not committed to
+GitHub** because `shim/` is gitignored. If you need this workaround, obtain the
+shim directly from P3. From the repository root, activate it in PowerShell
+before running Python:
+
+```powershell
+$env:PYTHONPATH = "$PWD\shim"
+```
+
+With the shim active, pandas falls back to pickle for the processed `.parquet`
+tables and prediction files. These files retain a `.parquet` filename but are
+pickle-backed, **not genuine Parquet files**; do not assume standard Parquet
+readers can open them.
+
 1. Unzip `Student folder.zip` and copy its `train/` and `student_test/` folders into `data/raw/`
    (so you have `data/raw/train/00000001/00000001.track` etc.). `data/` is git-ignored: never commit data.
 2. Build the candidate tables (~30 s):
@@ -31,6 +49,41 @@ python src/score_candidates.py   # out-of-fold M7 scores for HMM tuning (~2 min)
 python src/run_hmm.py            # HMM classic vs learned transitions, writes models/hmm_config.json (~4 min)
 python src/make_maps.py          # Folium maps: GPS + road network + reference + predicted route, legend + layer control
 ```
+
+## Model comparison and M7 tuning
+
+P3 completed the M1–M4 and M5/M6/M7 comparison. The comparison plots contain
+eight model bars: M1–M7 plus the tuned M7.
+
+| Model | Student-test Top-1 | Student-test Macro-F1 |
+|---|---:|---:|
+| Default M7 | 0.9047 | 0.9464 |
+| Tuned M7 | 0.9046 | 0.9463 |
+
+Optuna TPE tuning raised CV Top-1 from 0.8997 to 0.9011, an improvement of
+about 0.14 percentage points, within fold variation. It did not materially
+improve student-test performance; the default M7 was already near-optimal.
+
+The run attempted 25 trials: 20 completed and 5 were pruned, taking
+approximately 39.7 minutes. The planned 50 trials were stopped early because
+of time constraints. The committed experiment records are
+`results/optuna_trials.csv`, `results/optuna_summary.json`, and
+`figures/optuna_*.png`. The tuned artifact `models/M7_tuned_lgbm_rank.joblib`
+is also committed; this does not mean every model artifact is in GitHub.
+
+Optuna uses a file-based journal at `results/optuna_journal.log`. It is
+gitignored and is not included in GitHub. The journal was used because
+SQLAlchemy's DLL was blocked on the P3 laptop, and it lets the study resume
+where that local journal exists. To target 50 total trials, run from the
+repository root:
+
+```powershell
+python src/tune.py --trials 50
+```
+
+`50` is the total target, not 50 additional trials. With the existing 25-trial
+journal, this requests 25 more. Keep the local journal to resume that study; a
+fresh checkout without it cannot resume the P3 journal.
 
 ## Pipeline modules (`src/`)
 | File | Purpose |
@@ -157,3 +210,16 @@ that artifact in its intended environment. The requirements pin scikit-learn
 LightGBM 4.7.0. The M7 artifact does not record its LightGBM build version, so
 run an approved inference smoke test before release. Other dependencies remain
 unpinned and should be locked together for a fully reproducible release.
+
+`models/M4.joblib` is approximately 277 MB and is excluded from GitHub because
+it exceeds the repository's file-size limit. It is gitignored and must be
+regenerated locally; do not expect to download it from GitHub:
+
+```powershell
+python src/train_models.py --models M4
+```
+
+## AI-use disclosure
+
+AI assistance was used to help write project code and documentation; reported
+model metrics are taken from the committed experiment records.
